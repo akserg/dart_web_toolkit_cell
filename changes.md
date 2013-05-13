@@ -3,6 +3,7 @@ Dart Web Toolkit Cell Changes
 
 **May 13, 2013
 
+* Following the Dart SDK 0.5.7.2_r22611.
 * Following Dart Web Toolkit 0.3.10.
 * Added Cell, AbstractCell, ActionCell, IsCollapsible and ValueUpdater.
 * Added unittests.

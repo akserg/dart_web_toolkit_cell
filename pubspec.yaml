@@ -4,6 +4,6 @@ author: Sergey Akopkokhyants <akserg@gmail.com>
 description: Data presentation widgets for the Dart Web Toolkit.
 homepage: http://akserg.github.com/dart_web_toolkit_cell
 dependencies:
-  browser: ">=0.5.5"
-  dart_web_toolkit: ">=0.3.10+2"
-  unittest: ">=0.5.5"
+  browser: ">=0.5.7"
+  dart_web_toolkit: ">=0.3.10+3"
+  unittest: ">=0.5.7"
