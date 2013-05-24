@@ -1,9 +1,9 @@
 name: dart_web_toolkit_cell
-version: 0.0.1
+version: 0.0.2
 author: Sergey Akopkokhyants <akserg@gmail.com>
 description: Data presentation widgets for the Dart Web Toolkit.
 homepage: http://akserg.github.com/dart_web_toolkit_cell
 dependencies:
-  browser: ">=0.5.7"
-  dart_web_toolkit: ">=0.3.10+3"
-  unittest: ">=0.5.7"
+  browser: ">=0.5.9"
+  dart_web_toolkit: ">=0.3.11"
+  unittest: ">=0.5.9"
