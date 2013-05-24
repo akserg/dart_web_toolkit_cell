@@ -5,5 +5,5 @@ description: Data presentation widgets for the Dart Web Toolkit.
 homepage: http://akserg.github.com/dart_web_toolkit_cell
 dependencies:
   browser: ">=0.5.9"
-  dart_web_toolkit: ">=0.3.11"
+  dart_web_toolkit: ">=0.3.11+1"
   unittest: ">=0.5.9"

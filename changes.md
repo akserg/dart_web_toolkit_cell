@@ -4,6 +4,7 @@ Dart Web Toolkit Cell Changes
 ** May 24, 2013
 
 * Implemented cell, celldata and cellview libraries.
+* Following Dart Web Toolkit 0.3.11+1.
 
 ** May 13, 2013
 
