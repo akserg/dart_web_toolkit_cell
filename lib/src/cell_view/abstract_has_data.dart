@@ -112,7 +112,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
   /**
    * A bool indicating that the widget has focus.
    */
-  bool isFocused;
+  bool isFocused = false;
 
   int _accessKey = 0;
 
@@ -120,12 +120,12 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * A bool indicating that the widget is refreshing, so all events should be
    * ignored.
    */
-  bool _isRefreshing;
+  bool isRefreshing = false;
 
   HasDataPresenter<T> _presenter;
   event.HandlerRegistration _keyboardSelectionReg;
   event.HandlerRegistration _selectionManagerReg;
-  int _tabIndex;
+  int _tabIndex = 0;
 
   /**
    * Constructs an {@link AbstractHasData} with the given page size.
@@ -360,17 +360,17 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * @see #onBrowserEvent2(Event)
    */
   
-  void onBrowserEvent(Event evt) {
+  void onBrowserEvent(dart_html.Event evt) {
     CellBasedWidgetImpl.get().onBrowserEvent(this, evt);
 
     // Ignore spurious events (such as onblur) while we refresh the table.
-    if (_isRefreshing) {
+    if (isRefreshing) {
       return;
     }
 
     // Verify that the target is still a child of this widget. IE fires focus
     // events even after the element has been removed from the DOM.
-    EventTarget eventTarget = evt.getEventTarget();
+    dart_html.EventTarget eventTarget = evt.target;
     if (!(eventTarget is dart_html.Element)) {
       return;
     }
@@ -380,7 +380,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
     }
     super.onBrowserEvent(evt);
 
-    String eventType = evt.getType();
+    String eventType = evt.type;
     if (event.BrowserEvents.FOCUS == eventType) {
       // Remember the focus state.
       isFocused = true;
@@ -695,7 +695,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
   }
 
   /**
-   * Render all row values into the specified {@link SafeHtmlBuilder}.
+   * Render all row values into the specified {@link util.SafeHtmlBuilder}.
    * 
    * <p>
    * Subclasses can optionally throw an {@link UnsupportedOperationException} if
@@ -703,11 +703,11 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * {@link #replaceAllChildren(List, util.SafeHtml)} and
    * {@link #replaceChildren(List, int, util.SafeHtml)}. In this case, the
    * {@link util.SafeHtml} argument will be null. Though a bit hacky, this is
-   * designed to supported legacy widgets that use {@link SafeHtmlBuilder}, and
+   * designed to supported legacy widgets that use {@link util.SafeHtmlBuilder}, and
    * newer widgets that use other builders, such as the ElementBuilder API.
    * </p>
    * 
-   * @param sb the {@link SafeHtmlBuilder} to render into
+   * @param sb the {@link util.SafeHtmlBuilder} to render into
    * @param values the row values
    * @param start the absolute start index of the values
    * @param selectionModel the {@link SelectionModel}
@@ -715,7 +715,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    *           {@link #replaceAllChildren(List, util.SafeHtml)} and
    *           {@link #replaceChildren(List, int, util.SafeHtml)}
    */
-  void renderRowValues(SafeHtmlBuilder sb, List<T> values, int start,
+  void renderRowValues(util.SafeHtmlBuilder sb, List<T> values, int start,
       SelectionModel<T> selectionModel); // throws UnsupportedOperationException;
 
   /**
@@ -723,11 +723,12 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * 
    * @param values the values of the new children
    * @param html the html to render, or null if
-   *          {@link #renderRowValues(SafeHtmlBuilder, List, int, SelectionModel)}
+   *          {@link #renderRowValues(util.SafeHtmlBuilder, List, int, SelectionModel)}
    *          throws an {@link UnsupportedOperationException}
    */
   void replaceAllChildren(List<T> values, util.SafeHtml html) {
-    replaceAllChildren(this, getChildContainer(), html);
+    //AbstractHasData.replaceAllChildrenInWidget(this, getChildContainer(), html);
+    AbstractHasData.replaceAllChildrenInWidgte(this, getChildContainer(), html);
   }
 
   /**
@@ -739,14 +740,15 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * @param values the values of the new children
    * @param start the start index to be replaced, relative to the page start
    * @param html the html to render, or null if
-   *          {@link #renderRowValues(SafeHtmlBuilder, List, int, SelectionModel)}
+   *          {@link #renderRowValues(util.SafeHtmlBuilder, List, int, SelectionModel)}
    *          throws an {@link UnsupportedOperationException}
    */
   void replaceChildren(List<T> values, int start, util.SafeHtml html) {
     dart_html.Element newChildren = convertToElements(html);
-    replaceChildren(this, getChildContainer(), newChildren, start, html);
+    AbstractHasData.replaceChildrenInWidget(this, getChildContainer(), newChildren, start, html);
   }
 
+  
   /**
    * Reset focus on the currently focused cell.
    * 
@@ -762,7 +764,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    */
   void setFocusable(dart_html.Element elem, bool focusable) {
     if (focusable) {
-      FocusImpl focusImpl = FocusImpl.getFocusImplForWidget();
+      ui.FocusImpl focusImpl = ui.FocusImpl.getFocusImplForWidget();
       dart_html.Element rowElem = elem;
       focusImpl.setTabIndex(rowElem, getTabIndex());
       if (_accessKey != 0) {
@@ -771,9 +773,9 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
     } else {
       // Chrome: Elements remain focusable after removing the tabIndex, so set
       // it to -1 first.
-      elem.setTabIndex(-1);
-      elem.removeAttribute("tabIndex");
-      elem.removeAttribute("accessKey");
+      elem.tabIndex = -1;
+      elem.attributes.remove("tabIndex");
+      elem.attributes.remove("accessKey");
     }
   }
 
@@ -793,7 +795,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * @param selected true if selected, false if not
    * @deprecated this method is never called by AbstractHasData, render the
    *             selected styles in
-   *             {@link #renderRowValues(SafeHtmlBuilder, List, int, SelectionModel)}
+   *             {@link #renderRowValues(util.SafeHtmlBuilder, List, int, SelectionModel)}
    */
 //  @Deprecated
 //  void setSelected(dart_html.Element elem, bool selected) {
@@ -857,9 +859,9 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
       return;
     }
     if (show) {
-      element.getStyle().clearDisplay();
+      element.style.display = "";
     } else {
-      element.getStyle().setDisplay(Display.NONE);
+      element.style.display = util.Display.NONE;
     }
   }
 }
@@ -893,10 +895,10 @@ class DefaultKeyboardSelectionHandler<T> implements CellPreviewEventHandler<T> {
   }
 
   
-  void onCellPreview(CellPreviewEvent<T> event) {
-    NativeEvent nativeEvent = event.getNativeEvent();
-    String eventType = event.getNativeEvent().getType();
-    if (event.BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
+  void onCellPreview(CellPreviewEvent<T> evt) {
+    dart_html.Event nativeEvent = evt.getNativeEvent();
+    String eventType = nativeEvent.type;
+    if (event.BrowserEvents.KEYDOWN == eventType && !evt.isCellEditing()) {
       /*
        * Handle keyboard navigation, unless the cell is being edited. If the
        * cell is being edited, we do not want to change rows.
@@ -907,55 +909,55 @@ class DefaultKeyboardSelectionHandler<T> implements CellPreviewEventHandler<T> {
       switch (nativeEvent.getKeyCode()) {
         case KeyCodes.KEY_DOWN:
           nextRow();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case KeyCodes.KEY_UP:
           prevRow();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case KeyCodes.KEY_PAGEDOWN:
           nextPage();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case KeyCodes.KEY_PAGEUP:
           prevPage();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case KeyCodes.KEY_HOME:
           home();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case KeyCodes.KEY_END:
           end();
-          handledEvent(event);
+          handledEvent(evt);
           return;
         case 32:
           // Prevent the list box from scrolling.
-          handledEvent(event);
+          handledEvent(evt);
           return;
       }
-    } else if (event.BrowserEvents.CLICK.equals(eventType)) {
+    } else if (event.BrowserEvents.CLICK == eventType) {
       /*
        * Move keyboard focus to the clicked row, even if the Cell is being
        * edited. Unlike key events, we aren't moving the currently selected
        * row, just updating it based on where the user clicked.
        */
-      int relRow = event.getIndex() - _display.getPageStart();
+      int relRow = evt.getIndex() - _display.getPageStart();
 
       // If a natively focusable element was just clicked, then do not steal
       // focus.
       bool isFocusable = false;
-      dart_html.Element target = dart_html.Element.as(event.getNativeEvent().getEventTarget());
+      dart_html.Element target = nativeEvent.target as dart_html.Element;
       isFocusable = CellBasedWidgetImpl.get().isFocusable(target);
       _display.setKeyboardSelectedRow(relRow, !isFocusable);
 
       // Do not cancel the event as the click may have occurred on a Cell.
-    } else if (event.BrowserEvents.FOCUS.equals(eventType)) {
+    } else if (event.BrowserEvents.FOCUS == eventType) {
       // Move keyboard focus to match the currently focused element.
-      int relRow = event.getIndex() - _display.getPageStart();
+      int relRow = evt.getIndex() - _display.getPageStart();
       if (_display.getKeyboardSelectedRow() != relRow) {
         // Do not steal focus as this was a focus event.
-        _display.setKeyboardSelectedRow(event.getIndex(), false);
+        _display.setKeyboardSelectedRow(evt.getIndex(), false);
 
         // Do not cancel the event as the click may have occurred on a Cell.
         return;
@@ -968,9 +970,9 @@ class DefaultKeyboardSelectionHandler<T> implements CellPreviewEventHandler<T> {
     setKeyboardSelectedRow(_display.getRowCount() - 1);
   }
 
-  void handledEvent(CellPreviewEvent<T> event) {
-    event.setCanceled(true);
-    event.getNativeEvent().preventDefault();
+  void handledEvent(CellPreviewEvent<T> evt) {
+    evt.setCanceled(true);
+    evt.getNativeEvent().preventDefault();
   }
 
   // Visible for testing.
@@ -1035,7 +1037,7 @@ class View<T> implements HasDataPresenterView<T> {
   
   void replaceAllChildren(List<T> values, SelectionModel<T> selectionModel,
       bool stealFocus) {
-    util.SafeHtml html = renderRowValues(values, _hasData.getPageStart(), selectionModel);
+    util.SafeHtml html = _renderRowValues(values, _hasData.getPageStart(), selectionModel);
 
     // Removing elements can fire a blur event, which we ignore.
     _hasData.isFocused = _hasData.isFocused || stealFocus;
@@ -1080,7 +1082,7 @@ class View<T> implements HasDataPresenterView<T> {
     _fireValueChangeEvent();
   }
 
-  
+
   void resetFocus() {
     if (_wasFocused) {
       CellBasedWidgetImpl.get().resetFocus(new ViewScheduledCommand(this));
@@ -1121,7 +1123,7 @@ class View<T> implements HasDataPresenterView<T> {
   util.SafeHtml _renderRowValues(List<T> values, int start,
                                    SelectionModel<T> selectionModel) {
     try {
-      SafeHtmlBuilder sb = new SafeHtmlBuilder();
+      util.SafeHtmlBuilder sb = new util.SafeHtmlBuilder();
       _hasData.renderRowValues(sb, values, start, selectionModel);
       return sb.toSafeHtml();
     } on Exception catch (e) {

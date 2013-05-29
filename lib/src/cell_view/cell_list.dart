@@ -37,7 +37,7 @@ class CellList<T> extends AbstractHasData<T> {
 
   static CellListResources _DEFAULT_RESOURCES;
 
-  static Template TEMPLATE; // = GWT.create(Template.class);
+  static CellListTemplate TEMPLATE = new CellListTemplate(); // = GWT.create(Template.class);
 
   static CellListResources _getDefaultResources() {
     if (_DEFAULT_RESOURCES == null) {
@@ -221,12 +221,12 @@ class CellList<T> extends AbstractHasData<T> {
   /**
    * Fire an event to the cell.
    * 
-   * @param context the {@link Context} of the cell
+   * @param context the {@link CellContext} of the cell
    * @param event the event that was fired
    * @param parent the parent of the cell
    * @param value the value of the cell
    */
-  void fireEventToCell(Context context, dart_html.Event event, dart_html.Element parent, T value) {
+  void fireEventToCell(CellContext context, dart_html.Event event, dart_html.Element parent, T value) {
     Set<String> consumedEvents = cell.getConsumedEvents();
     if (consumedEvents != null && consumedEvents.contains(event.type)) {
       bool cellWasEditing = cell.isEditing(context, parent, value);
@@ -297,7 +297,7 @@ class CellList<T> extends AbstractHasData<T> {
     // Forward the event to the cell.
     String idxString = "";
     dart_html.Element cellTarget = target;
-    while ((cellTarget != null) && ((idxString = cellTarget.attribute["__idx"]).length == 0)) {
+    while ((cellTarget != null) && ((idxString = cellTarget.attributes["__idx"]).length == 0)) {
       cellTarget = cellTarget.parent;
     }
     if (idxString.length > 0) {
@@ -319,7 +319,7 @@ class CellList<T> extends AbstractHasData<T> {
               || KeyboardSelectionPolicy.BOUND_TO_SELECTION == getKeyboardSelectionPolicy();
       dart_html.Element cellParent = getCellParent(cellTarget);
       T value = getVisibleItem(indexOnPage);
-      Context context = new Context(idx, 0, getValueKey(value));
+      CellContext context = new CellContext(idx, 0, getValueKey(value));
       CellPreviewEvent<T> previewEvent =
           CellPreviewEvent.fire(this, evt, this, context, value, _cellIsEditing,
               isSelectionHandled);
@@ -336,7 +336,8 @@ class CellList<T> extends AbstractHasData<T> {
     // Add the keyboard selection style.
     dart_html.Element elem = getKeyboardSelectedElement();
     if (elem != null) {
-      elem.addClassName(_style.cellListKeyboardSelectedItem());
+      //elem.addClassName(_style.cellListKeyboardSelectedItem());
+      elem.classes.add(_style.cellListKeyboardSelectedItem());
     }
   }
 
@@ -363,7 +364,7 @@ class CellList<T> extends AbstractHasData<T> {
 
     // Show the correct container.
     showOrHide(getChildContainer(), message == null);
-    _messagesPanel.setVisible(message != null);
+    _messagesPanel.visible = message != null;
 
     // Fire an event.
     super.onLoadingStateChanged(state);
@@ -377,22 +378,23 @@ class CellList<T> extends AbstractHasData<T> {
     String evenItem = _style.cellListEvenItem();
     String oddItem = _style.cellListOddItem();
     int keyboardSelectedRow = getKeyboardSelectedRow() + getPageStart();
-    int length = values.size();
+    int length = values.length;
     int end = start + length;
     for (int i = start; i < end; i++) {
-      T value = values.get(i - start);
+      T value = values[i - start];
       bool isSelected = selectionModel == null ? false : selectionModel.isSelected(value);
 
-      StringBuilder classesBuilder = new StringBuilder();
-      classesBuilder.append(i % 2 == 0 ? evenItem : oddItem);
+      StringBuffer classesBuilder = new StringBuffer();
+      classesBuilder.write(i % 2 == 0 ? evenItem : oddItem);
       if (isSelected) {
-        classesBuilder.append(selectedItem);
+        classesBuilder.write(selectedItem);
       }
 
       util.SafeHtmlBuilder cellBuilder = new util.SafeHtmlBuilder();
-      Context context = new Context(i, 0, getValueKey(value));
+      CellContext context = new CellContext(i, 0, getValueKey(value));
       cell.render(context, value, cellBuilder);
-      sb.append(TEMPLATE.div(i, classesBuilder.toString(), cellBuilder.toSafeHtml()));
+      util.SafeHtml item = TEMPLATE.div(i, classesBuilder.toString(), cellBuilder.toSafeHtml());
+      sb.append(item);
     }
   }
 
@@ -403,7 +405,7 @@ class CellList<T> extends AbstractHasData<T> {
       dart_html.Element rowElem = getKeyboardSelectedElement();
       dart_html.Element cellParent = getCellParent(rowElem);
       T value = getVisibleItem(row);
-      Context context = new Context(row + getPageStart(), 0, getValueKey(value));
+      CellContext context = new CellContext(row + getPageStart(), 0, getValueKey(value));
       return cell.resetFocus(context, cellParent, value);
     }
     return false;
@@ -417,7 +419,7 @@ class CellList<T> extends AbstractHasData<T> {
 
     dart_html.Element elem = getRowElement(index);
     if (!selected || isFocused || stealFocus) {
-      setStyleName(elem, _style.cellListKeyboardSelectedItem(), selected);
+      ui.UiObject.manageElementStyleName(elem, _style.cellListKeyboardSelectedItem(), selected);
     }
     setFocusable(elem, selected);
     if (selected && stealFocus && !_cellIsEditing) {
@@ -543,9 +545,10 @@ overflow: visible;
   }
 }
 
-abstract class Template extends util.SafeHtmlTemplates {
-  //@Template("<div onclick=\"\" __idx=\"{0}\" class=\"{1}\" style=\"outline:none;\" >{2}</div>")
-  util.SafeHtml div(int idx, String classes, util.SafeHtml cellContents);
+class CellListTemplate extends util.SafeHtmlTemplates {
+  util.SafeHtml div(int idx, String classes, util.SafeHtml cellContents) {
+    return util.SafeHtmlUtils.fromTrustedString("<div onclick=\"\" __idx=\"${idx}\" class=\"${classes}\" style=\"outline:none;\" >${cellContents.asString()}</div>");
+  }
 }
 
 class CellListScheduledCommand extends scheduler.ScheduledCommand {

@@ -76,7 +76,7 @@ class HasDataPresenter<T> implements HasData<T>, HasKeyProvider<T>, HasKeyboardP
   /**
    * A bool indicating that we are in the process of resolving state.
    */
-  bool _isResolvingState;
+  bool _isResolvingState = false;
 
   KeyboardPagingPolicy _keyboardPagingPolicy = KeyboardPagingPolicy.CHANGE_PAGE;
   KeyboardSelectionPolicy _keyboardSelectionPolicy = KeyboardSelectionPolicy.ENABLED;
@@ -529,7 +529,8 @@ class HasDataPresenter<T> implements HasData<T>, HasKeyProvider<T>, HasKeyboardP
    * @param command the command to execute
    */
   void scheduleFinally(scheduler.ScheduledCommand command) {
-    scheduler.Scheduler.get().scheduleFinally(command);
+    //scheduler.Scheduler.get().scheduleFinally(command);
+    scheduler.Scheduler.get().scheduleDeferred(command);
   }
 
   /**

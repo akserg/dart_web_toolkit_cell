@@ -59,7 +59,7 @@ abstract class CellBasedWidgetImpl {
    */
   bool isFocusable(dart_html.Element elem) {
     return focusableTypes.contains(elem.tagName.toLowerCase())
-        || elem.tabIndex() >= 0;
+        || elem.tabIndex >= 0;
   }
 
   /**
@@ -68,7 +68,7 @@ abstract class CellBasedWidgetImpl {
    * @param widget the {@link ui.Widget} on which the event occurred
    * @param event the event to handle
    */
-  void onBrowserEvent(ui.Widget widget, event.Event event) {
+  void onBrowserEvent(ui.Widget widget, dart_html.Event event) {
   }
 
   /**

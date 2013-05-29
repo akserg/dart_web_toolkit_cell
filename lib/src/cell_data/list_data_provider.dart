@@ -530,7 +530,8 @@ class _ListWrapper<T> { // implements List<T> {
     _flushCancelled = false;
     if (!_flushPending) {
       _flushPending = true;
-      scheduler.Scheduler.get().scheduleFinally(_flushCommand);
+//      scheduler.Scheduler.get().scheduleFinally(_flushCommand);
+      scheduler.Scheduler.get().scheduleDeferred(_flushCommand);
     }
   }
 

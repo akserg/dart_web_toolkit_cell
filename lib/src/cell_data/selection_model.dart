@@ -134,7 +134,8 @@ abstract class AbstractSelectionModel<T> implements SelectionModel<T> {
     setEventCancelled(false);
     if (!isEventScheduled()) {
       setEventScheduled(true);
-      scheduler.Scheduler.get().scheduleFinally(new _SelectionModelScheduledCommand(this));
+//      scheduler.Scheduler.get().scheduleFinally(new _SelectionModelScheduledCommand(this));
+      scheduler.Scheduler.get().scheduleDeferred(new _SelectionModelScheduledCommand(this));
     }
   }
 
