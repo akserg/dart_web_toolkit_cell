@@ -1,5 +1,8 @@
 Dart Web Toolkit Cell Changes
 =============================
+** May 29, 2013
+
+* CellList component implemented.
 
 ** May 24, 2013
 
