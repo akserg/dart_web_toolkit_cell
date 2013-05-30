@@ -26,7 +26,7 @@ class ActionCellTestGroup extends TestGroup {
    */
   void instanceTest() {
     String message = "Hi";
-    cell.ActionCell ac = new cell.ActionCell(new util.SafeHtmlUtils.fromString(message), null);
+    cell.ActionCell ac = new cell.ActionCell(util.SafeHtmlUtils.fromString(message), null);
     expect(ac.getConsumedEvents().contains(event.BrowserEvents.CLICK), isTrue);
     expect(ac.getConsumedEvents().contains(event.BrowserEvents.KEYDOWN), isTrue);
   }

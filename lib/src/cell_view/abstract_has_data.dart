@@ -79,7 +79,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
   static void replaceChildrenInWidget(ui.Widget widget, dart_html.Element childContainer, dart_html.Element newChildren,
       int start, util.SafeHtml html) {
     // Get the first element to be replaced.
-    int childCount = childContainer.getChildCount();
+    int childCount = childContainer.children.length;
     dart_html.Element toReplace = null;
     if (start < childCount) {
       toReplace = childContainer.children[start];
@@ -90,7 +90,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
     for (int i = 0; i < count; i++) {
       if (toReplace == null) {
         // The child will be removed from tmpElem, so always use index 0.
-         childContainer.append(newChildren.getChild(0));
+         childContainer.append(newChildren.children[0]);
       } else {
         dart_html.Element nextSibling = toReplace.nextElementSibling;
         newChildren.$dom_firstChild.replaceWith(toReplace);
@@ -418,7 +418,8 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
   void redrawRow(int absRowIndex) {
     int relRowIndex = absRowIndex - getPageStart();
     checkRowBounds(relRowIndex);
-    setRowData(Collections.singletonList(getVisibleItem(relRowIndex)), absRowIndex);
+    //setRowData(Collections.singletonList(getVisibleItem(relRowIndex)), absRowIndex);
+    setRowData(getVisibleItem(relRowIndex), absRowIndex);
   }
 
   /**
@@ -524,10 +525,10 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    */
   void setRowData(List<T> values, [int start = null]) {
     if (start != null) {
-      _presenter.setRowData(start, values);
+      _presenter.setRowData(values, start);
     } else {
       setRowCount(values.length);
-      setVisibleRange(new Range(0, values.length));
+      setVisibleRange(0, values.length);
       setRowData(values, 0);
     }
   }
@@ -564,7 +565,11 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
     setKeyboardSelected(getKeyboardSelectedRow(), true, false);
   }
   
-  void setVisibleRange(Range range) {
+  void setVisibleRange(int start, int length) {
+    setVisibleRangeByRange(new Range(start, length));
+  }
+  
+  void setVisibleRangeByRange(Range range) {
     _presenter.setVisibleRangeByRange(range);
   }
   
@@ -592,7 +597,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    */
   void checkRowBounds(int row) {
     if (!isRowWithinBounds(row)) {
-      throw new IndexOutOfBoundsException("Row index: " + row + ", Row size: " + getRowCount());
+      throw new Exception("Row index: $row, Row size: ${getRowCount()}");
     }
   }
 
@@ -604,7 +609,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * @return the parent element
    */
   dart_html.Element convertToElements(util.SafeHtml html) {
-    return convertToElements(this, _getTmpElem(), html);
+    return AbstractHasData.convertToElementsInWidget(this, _getTmpElem(), html);
   }
 
   /**
@@ -629,7 +634,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    */
   dart_html.Element getChildElement(int index) {
     dart_html.Element childContainer = getChildContainer();
-    int childCount = childContainer.getChildCount();
+    int childCount = childContainer.children.length;
     return (index < childCount) ? childContainer.children[index] : null;
   }
 
@@ -669,7 +674,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * 
    * @param event the event that was fired
    */
-  void onBrowserEvent2(Event event) {
+  void onBrowserEvent2(dart_html.Event event) {
   }
 
   /**
@@ -810,8 +815,8 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
    * @param handler the handler
    * @return a {@link event.HandlerRegistration} to remove the handler
    */
-  event.HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<T>> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
+  event.HandlerRegistration addValueChangeHandler(event.ValueChangeHandler<List> handler) {
+    return addHandler(handler, event.ValueChangeEvent.TYPE);
   }
 
   /**
@@ -861,7 +866,7 @@ abstract class AbstractHasData<T> extends ui.Composite implements HasData<T>,
     if (show) {
       element.style.display = "";
     } else {
-      element.style.display = util.Display.NONE;
+      element.style.display = util.Display.NONE.value;
     }
   }
 }
@@ -906,28 +911,28 @@ class DefaultKeyboardSelectionHandler<T> implements CellPreviewEventHandler<T> {
        * Prevent default on navigation events to prevent default scrollbar
        * behavior.
        */
-      switch (nativeEvent.getKeyCode()) {
-        case KeyCodes.KEY_DOWN:
+      switch ((nativeEvent as dart_html.KeyboardEvent).keyCode) {
+        case event.KeyCodes.KEY_DOWN:
           nextRow();
           handledEvent(evt);
           return;
-        case KeyCodes.KEY_UP:
+        case event.KeyCodes.KEY_UP:
           prevRow();
           handledEvent(evt);
           return;
-        case KeyCodes.KEY_PAGEDOWN:
+        case event.KeyCodes.KEY_PAGEDOWN:
           nextPage();
           handledEvent(evt);
           return;
-        case KeyCodes.KEY_PAGEUP:
+        case event.KeyCodes.KEY_PAGEUP:
           prevPage();
           handledEvent(evt);
           return;
-        case KeyCodes.KEY_HOME:
+        case event.KeyCodes.KEY_HOME:
           home();
           handledEvent(evt);
           return;
-        case KeyCodes.KEY_END:
+        case event.KeyCodes.KEY_END:
           end();
           handledEvent(evt);
           return;
@@ -1061,7 +1066,7 @@ class View<T> implements HasDataPresenterView<T> {
   
   void replaceChildren(List<T> values, int start,
                        SelectionModel<T> selectionModel, bool stealFocus) {
-    util.SafeHtml html = renderRowValues(values, _hasData.getPageStart() + start, selectionModel);
+    util.SafeHtml html = _renderRowValues(values, _hasData.getPageStart() + start, selectionModel);
 
     // Removing elements can fire a blur event, which we ignore.
     _hasData.isFocused = _hasData.isFocused || stealFocus;
@@ -1149,7 +1154,7 @@ class ViewScheduledCommand extends scheduler.ScheduledCommand {
   
   void execute() {
     if (!_view._hasData.resetFocusOnCell()) {
-      dart_html.Element elem = _view_hasData.getKeyboardSelectedElement();
+      dart_html.Element elem = _view._hasData.getKeyboardSelectedElement();
       if (elem != null) {
         elem.focus();
       }

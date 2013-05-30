@@ -16,7 +16,6 @@ import 'package:dart_web_toolkit/i18n.dart' as i18n;
 import 'package:dart_web_toolkit_cell/cell.dart' as cell;
 
 part 'test_group.dart';
-part 'src/mock_element.dart';
 part 'src/solid_ui_object.dart';
 part 'src/action_cell_test_group.dart';
 

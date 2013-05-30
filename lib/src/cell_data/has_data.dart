@@ -62,7 +62,7 @@ abstract class HasData<T> implements HasRows, HasCellPreviewHandlers<T> {
    * @param start the start index of the data
    * @param values the values within the range
    */
-  void setRowData(int start, List<T> values);
+  void setRowData(List<T> values, [int start = null]);
 
   /**
    * Set the {@link SelectionModel} used by this {@link HasData}.

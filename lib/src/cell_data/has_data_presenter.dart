@@ -440,7 +440,7 @@ class HasDataPresenter<T> implements HasData<T>, HasKeyProvider<T>, HasKeyboardP
   }
 
   
-  void setRowData(int start, List<T> values) {
+  void setRowData(List<T> values, [int start = null]) {
     int valuesLength = values.length;
     int valuesEnd = start + valuesLength;
 

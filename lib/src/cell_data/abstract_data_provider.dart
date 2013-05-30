@@ -192,7 +192,7 @@ abstract class AbstractDataProvider<T> implements data.ProvidesKey<T> {
       int realLength = realEnd - realStart;
       List<T> realValues = values.sublist(
           realStart - start, realStart - start + realLength);
-      display.setRowData(realStart, realValues);
+      display.setRowData(realValues, realStart);
     }
   }
 }

@@ -203,7 +203,7 @@ class DefaultSelectionEventManager<T> implements CellPreviewEventHandler<T> {
     }
 
     // Early exit if we do not have a SelectionModel.
-    HasData<T> display = evt.getDisplay();
+    HasData<T> display = evt.getDisplay() as HasData;
     SelectionModel<T> selectionModel = display.getSelectionModel();
     if (selectionModel == null) {
       return;
@@ -260,7 +260,7 @@ class DefaultSelectionEventManager<T> implements CellPreviewEventHandler<T> {
       if (action == null || action == SelectAction.DEFAULT) {
         action = ctrlOrMeta ? SelectAction.TOGGLE : SelectAction.SELECT;
       }
-      doMultiSelection(selectionModel, evt.getDisplay(), evt.getIndex(),
+      doMultiSelection(selectionModel, evt.getDisplay() as HasData, evt.getIndex(),
           evt.getValue(), action, shift, clearOthers);
     } else if (event.BrowserEvents.KEYUP == type) {
       int keyCode = (nativeEvent as dart_html.KeyboardEvent).keyCode;
@@ -275,7 +275,7 @@ class DefaultSelectionEventManager<T> implements CellPreviewEventHandler<T> {
         if (action == null || action == SelectAction.DEFAULT) {
           action = SelectAction.TOGGLE;
         }
-        doMultiSelection(selectionModel, evt.getDisplay(), evt.getIndex(),
+        doMultiSelection(selectionModel, evt.getDisplay() as HasData, evt.getIndex(),
             evt.getValue(), action, shift, clearOthers);
       }
     }

@@ -72,7 +72,7 @@ class CellList<T> extends AbstractHasData<T> {
    * @param keyProvider an instance of ProvidesKey<T>, or null if the record
    *          object should act as its own key
    */
-  CellList(this.cell, {CellListResources resources:null, ProvidesKey<T> keyProvider:null}) : super.fromElement(new dart_html.DivElement(), _DEFAULT_PAGE_SIZE, keyProvider) {
+  CellList(this.cell, {CellListResources resources:null, data.ProvidesKey<T> keyProvider:null}) : super.fromElement(new dart_html.DivElement(), _DEFAULT_PAGE_SIZE, keyProvider) {
     if (resources == null) {
       resources = _getDefaultResources();
     }
@@ -233,7 +233,9 @@ class CellList<T> extends AbstractHasData<T> {
       cell.onBrowserEvent(context, parent, value, event, _valueUpdater);
       _cellIsEditing = cell.isEditing(context, parent, value);
       if (cellWasEditing && !_cellIsEditing) {
-        CellBasedWidgetImpl.get().resetFocus(new scheduler.ScheduledCommandAdapter(setFocus(true)));
+        CellBasedWidgetImpl.get().resetFocus(new scheduler.ScheduledCommandAdapter((){
+          setFocus(true);
+        }));
       }
     }
   }
@@ -282,7 +284,7 @@ class CellList<T> extends AbstractHasData<T> {
     dart_html.Element elem = getKeyboardSelectedElement();
     if (elem != null) {
       String className = elem.$dom_className;
-      int i = className.replaceFirst(_style.cellListKeyboardSelectedItem(), '');
+      className.replaceFirst(_style.cellListKeyboardSelectedItem(), '');
     }
   }
 
@@ -321,7 +323,7 @@ class CellList<T> extends AbstractHasData<T> {
       T value = getVisibleItem(indexOnPage);
       CellContext context = new CellContext(idx, 0, getValueKey(value));
       CellPreviewEvent<T> previewEvent =
-          CellPreviewEvent.fire(this, evt, this, context, value, _cellIsEditing,
+          CellPreviewEvent.fire(this as HasCellPreviewHandlers, evt, this as HasData, context, value, _cellIsEditing,
               isSelectionHandled);
 
       // Fire the event to the cell if the list has not been refreshed.
@@ -359,7 +361,7 @@ class CellList<T> extends AbstractHasData<T> {
 
     // Switch out the message to display.
     if (message != null) {
-      _messagesPanel.showWidget(_messagesPanel.getWidgetIndex(message));
+      _messagesPanel.showWidgetAt(_messagesPanel.getWidgetIndex(message));
     }
 
     // Show the correct container.
@@ -548,12 +550,5 @@ overflow: visible;
 class CellListTemplate extends util.SafeHtmlTemplates {
   util.SafeHtml div(int idx, String classes, util.SafeHtml cellContents) {
     return util.SafeHtmlUtils.fromTrustedString("<div onclick=\"\" __idx=\"${idx}\" class=\"${classes}\" style=\"outline:none;\" >${cellContents.asString()}</div>");
-  }
-}
-
-class CellListScheduledCommand extends scheduler.ScheduledCommand {
-  
-  void execute() {
-    setFocus(true);
   }
 }

@@ -19,7 +19,7 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
   /**
    * Dispatch an event through the normal GWT mechanism.
    */
-  static void dispatchEvent(event.Event evt, dart_html.Element elem, event.EventListener listener) {
+  static void dispatchEvent(dart_html.Event evt, dart_html.Element elem, event.EventListener listener) {
     //@com.google.gwt.user.client.DOM::dispatchEvent(Lcom/google/gwt/user/client/event.Event;Lcom/google/gwt/user/client/dart_html.Element;Lcom/google/gwt/user/client/event.EventListener;)(evt, elem, listener);
     event.Dom.dispatchEvent(evt, elem, listener);
   }
@@ -29,9 +29,9 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
    * 
    * @param event the event to handle.
    */
-  static void _handleNonBubblingEvent(event.Event evt) {
+  static void _handleNonBubblingEvent(dart_html.Event evt) {
     // Get the evt target.
-    event.EventTarget eventTarget = evt.target; //getEventTarget();
+    dart_html.EventTarget eventTarget = evt.target; //getEventTarget();
     if (!(eventTarget is dart_html.Element)) {
       return;
     }
@@ -40,7 +40,7 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
     // Get the evt listener, which is the first widget that handles the
     // specified evt type.
     String typeName = evt.type;
-    event.EventListener listener = eventDom.getEventListener(target);
+    event.EventListener listener = event.Dom.getEventListener(target);
     while (target != null && listener == null) {
       target = target.parent;
       if (target != null && _isNonBubblingEventHandled(target, typeName)) {
