@@ -6,15 +6,15 @@ set -e
 # Type Analysis
 ###############
 
-echo
-echo "dart_analyzer --extended-exit-code lib/*.dart"
+echo "Analyse code..."
 
-results=$(dart_analyzer --extended-exit-code lib/*.dart)
+output=$(dart_analyzer --extended-exit-code lib/*.dart 2>&1)
+results=$?
 
-if [ -n "$results" ]; then
+if [ "$results" -ne 0 ]; then
     exit 1
 else
-    echo "Passed analysis."
+   echo "Passed analysis."
 fi
 
 ############
